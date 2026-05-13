@@ -1,0 +1,56 @@
+{
+  "web-vitals-2024": {
+    "id": "web-vitals-2024",
+    "title": "Core Web Vitals: 2024 Updates",
+    "authors": ["Philip Walton", "Barry Pollard"],
+    "publisher": "web.dev",
+    "year": 2024,
+    "url": "https://web.dev/articles/inp",
+    "accessedDate": "2025-01-10T00:00:00.000Z"
+  },
+  "rfc-7234": {
+    "id": "rfc-7234",
+    "title": "Hypertext Transfer Protocol (HTTP/1.1): Caching",
+    "authors": ["R. Fielding", "M. Nottingham", "J. Reschke"],
+    "publisher": "IETF",
+    "year": 2014,
+    "url": "https://datatracker.ietf.org/doc/html/rfc7234",
+    "accessedDate": "2025-01-10T00:00:00.000Z"
+  },
+  "image-perf-mdn": {
+    "id": "image-perf-mdn",
+    "title": "Responsive images",
+    "authors": ["MDN Contributors"],
+    "publisher": "Mozilla Developer Network",
+    "year": 2024,
+    "url": "https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images",
+    "accessedDate": "2025-01-10T00:00:00.000Z"
+  },
+  "html-spec-loading": {
+    "id": "html-spec-loading",
+    "title": "HTML Living Standard: lazy loading",
+    "authors": ["WHATWG"],
+    "publisher": "WHATWG",
+    "year": 2024,
+    "url": "https://html.spec.whatwg.org/multipage/urls-and-fetching.html#lazy-loading-attributes",
+    "accessedDate": "2025-01-10T00:00:00.000Z"
+  },
+  "v8-performance": {
+    "id": "v8-performance",
+    "title": "Optimizing JavaScript for V8",
+    "authors": ["V8 Team"],
+    "publisher": "Google",
+    "year": 2023,
+    "url": "https://v8.dev/blog",
+    "accessedDate": "2025-01-10T00:00:00.000Z"
+  },
+  "css-containment": {
+    "id": "css-containment",
+    "title": "CSS Containment Module Level 2",
+    "authors": ["Tab Atkins", "Florian Rivoal"],
+    "publisher": "W3C",
+    "year": 2023,
+    "url": "https://www.w3.org/TR/css-contain-2/",
+    "accessedDate": "2025-01-10T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,80 @@
+---
+title: 'Render-Blocking Resources: What They Are and How to Defer Them'
+description: 'Stylesheets, synchronous scripts, and fonts can each block the first paint. A practical guide to identifying, prioritizing, and deferring them safely.'
+publishedAt: 2024-12-22
+author:
+  name: Editorial Team
+cluster: rendering
+tags: [rendering, css, javascript, fonts]
+citations: [web-vitals-2024]
+draft: false
+---
+
+import Citation from '../../components/Citation.astro';
+
+A render-blocking resource is anything the browser must download and process before it can do the first paint. Three categories matter in practice: synchronous CSS, synchronous JavaScript in the head, and web fonts <Citation id="web-vitals-2024" />.
+
+## Synchronous CSS
+
+By default, every `<link rel="stylesheet">` blocks render. This is correct for above-the-fold critical CSS. It is wrong for everything else.
+
+The pragmatic split:
+
+```html
+<!-- Critical CSS, inline -->
+<style>/* ~10 KB of above-the-fold styles */</style>
+
+<!-- Non-critical CSS, preloaded async -->
+<link
+  rel="preload"
+  href="/styles/below-fold.css"
+  as="style"
+  onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="/styles/below-fold.css" /></noscript>
+```
+
+Astro's `inlineStylesheets: 'auto'` handles this automatically for small stylesheets. For larger styles, route-level splitting in your framework usually does the right thing.
+
+## Synchronous JavaScript
+
+Scripts in the head without `async` or `defer` block parsing entirely. The default modern stance:
+
+- Use `defer` for scripts that need DOM access but no specific load order.
+- Use `async` for self-contained scripts (analytics, third-party widgets) where order does not matter.
+- Use `type="module"` for ES module scripts; they are deferred by default.
+
+A common mistake: third-party tags added "temporarily" with no async attribute. They block render every time and rarely get cleaned up.
+
+## Web fonts
+
+The font CSS `@font-face` block lives in your stylesheet, so it is downloaded with the rest of CSS. The font file itself is downloaded only when the browser realizes a node uses it.
+
+The defaults that should be on every `@font-face`:
+
+```css
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter.woff2') format('woff2');
+  font-display: swap;
+  font-weight: 400 700;
+}
+```
+
+`font-display: swap` shows fallback text until the web font loads. The visual flash (FOUT) is preferable to invisible text (FOIT). For LCP-critical fonts, also preload:
+
+```html
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin />
+```
+
+## A diagnostic workflow
+
+1. Run Lighthouse against the page; expand the "Eliminate render-blocking resources" audit.
+2. For each item, decide: is this above-the-fold critical, or below?
+3. Inline the critical, defer the rest.
+4. Re-measure.
+
+The first pass typically removes one or two seconds of render-blocking time on a poorly-tuned site.
+
+## Closing
+
+Render-blocking is the most diagnosable performance category in the platform. Every blocking resource is named in DevTools and Lighthouse. The work is methodical, and the payback is immediate.

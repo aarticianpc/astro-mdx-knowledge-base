@@ -1,0 +1,76 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import Bibliography from '../components/Bibliography.astro';
+import JsonLd from '../components/JsonLd.astro';
+import { assertCitationsExist } from '../lib/citations';
+
+interface Props {
+  article: CollectionEntry<'articles'>;
+}
+
+const { article } = Astro.props;
+const data = article.data;
+
+// Build-time guarantee: every cited id exists in the registry.
+assertCitationsExist(data.citations, `article "${article.slug}"`);
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const articleUrl = `${siteUrl}/articles/${article.slug}`;
+
+// Single source of truth: the JSON-LD payload below is built from the SAME
+// `data` object the visible page reads from. They cannot drift.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: data.title,
+  description: data.description,
+  datePublished: data.publishedAt.toISOString(),
+  dateModified: (data.updatedAt ?? data.publishedAt).toISOString(),
+  author: {
+    '@type': 'Person',
+    name: data.author.name,
+    ...(data.author.url ? { url: data.author.url } : {}),
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Web Performance Knowledge Base',
+    url: siteUrl,
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': articleUrl,
+  },
+  keywords: data.tags.join(', '),
+  articleSection: data.cluster,
+};
+
+const formattedDate = data.publishedAt.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+<BaseLayout
+  title={`${data.title} - Web Performance KB`}
+  description={data.description}
+  canonical={data.canonical ?? articleUrl}
+  ogType="article">
+  <JsonLd slot="head" data={jsonLd} />
+
+  <article class="max-w-3xl mx-auto px-4 py-12 prose-article">
+    <header class="mb-8 pb-6 border-b border-ink-200 not-prose">
+      <div class="flex items-center gap-2 text-xs text-ink-400 mb-3 uppercase tracking-wide">
+        <span class="px-2 py-0.5 bg-ink-100 rounded font-semibold">{data.cluster}</span>
+        <time datetime={data.publishedAt.toISOString()}>{formattedDate}</time>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight text-ink-900">{data.title}</h1>
+      <p class="mt-3 text-lg text-ink-600 leading-relaxed">{data.description}</p>
+      <p class="mt-4 text-sm text-ink-400">By {data.author.name}</p>
+    </header>
+
+    <slot />
+
+    <Bibliography ids={data.citations} />
+  </article>
+</BaseLayout>

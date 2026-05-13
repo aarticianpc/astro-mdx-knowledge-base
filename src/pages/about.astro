@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="About - Web Performance KB"
+  description="A demo Astro + MDX authority site with strict Zod validation, inline citations, and JSON-LD structured data.">
+  <article class="max-w-3xl mx-auto px-4 py-12 prose-article">
+    <h1>About this site</h1>
+    <p>
+      This is a demo Astro authority site built to showcase a content-and-data
+      pipeline with strict, build-time validation. Every article is validated
+      against a Zod schema, every citation is cross-checked against a registry,
+      and the build fails loudly on any malformed input.
+    </p>
+
+    <h2>Architecture</h2>
+    <ul>
+      <li><strong>Content layer:</strong> Astro Content Collections with Zod-validated frontmatter.</li>
+      <li><strong>Citation engine:</strong> a single JSON registry, validated once at module load.</li>
+      <li><strong>Structured data:</strong> JSON-LD generated from the same object the page renders.</li>
+      <li><strong>Performance budget:</strong> Lighthouse CI gates 95+ on every push.</li>
+      <li><strong>Hosting:</strong> Cloudflare Pages, static-only, no runtime.</li>
+    </ul>
+
+    <h2>Why fail-fast validation</h2>
+    <p>
+      Editorial sites rot in invisible ways: stale frontmatter, broken citations,
+      missing fields. The cheapest place to catch these is the build. If a
+      reference is malformed, the build refuses to ship.
+    </p>
+  </article>
+</BaseLayout>

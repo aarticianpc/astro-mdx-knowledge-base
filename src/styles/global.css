@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #ffffff;
+    --color-fg: #18181b;
+  }
+
+  html {
+    font-feature-settings: 'cv11', 'ss01';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::selection {
+    background: #0ea5e9;
+    color: #ffffff;
+  }
+}
+
+@layer components {
+  .prose-article h1 {
+    @apply text-4xl font-bold tracking-tight text-ink-900 mt-0 mb-4;
+  }
+  .prose-article h2 {
+    @apply text-2xl font-semibold tracking-tight text-ink-900 mt-12 mb-3;
+  }
+  .prose-article h3 {
+    @apply text-xl font-semibold text-ink-900 mt-8 mb-2;
+  }
+  .prose-article p {
+    @apply text-ink-800 leading-relaxed my-4 text-[1.0625rem];
+  }
+  .prose-article ul {
+    @apply list-disc pl-6 my-4 text-ink-800 space-y-1;
+  }
+  .prose-article ol {
+    @apply list-decimal pl-6 my-4 text-ink-800 space-y-1;
+  }
+  .prose-article a {
+    @apply text-accent-600 underline underline-offset-2 hover:text-accent-500;
+  }
+  .prose-article code {
+    @apply font-mono text-[0.9em] bg-ink-100 px-1.5 py-0.5 rounded text-ink-900;
+  }
+  .prose-article pre {
+    @apply bg-ink-900 text-ink-50 rounded-lg p-4 overflow-x-auto my-6 text-sm;
+  }
+  .prose-article pre code {
+    @apply bg-transparent p-0 text-ink-50;
+  }
+  .prose-article blockquote {
+    @apply border-l-4 border-accent-500 pl-4 italic text-ink-600 my-6;
+  }
+  .prose-article table {
+    @apply w-full border-collapse my-6 text-sm;
+  }
+  .prose-article th,
+  .prose-article td {
+    @apply border border-ink-200 px-3 py-2 text-left;
+  }
+  .prose-article th {
+    @apply bg-ink-50 font-semibold;
+  }
+}
+
+/* Citation hover preview */
+.citation-ref {
+  @apply text-accent-600 no-underline cursor-help align-super text-xs font-semibold;
+}
+.citation-ref::before {
+  content: '[';
+}
+.citation-ref::after {
+  content: ']';
+}

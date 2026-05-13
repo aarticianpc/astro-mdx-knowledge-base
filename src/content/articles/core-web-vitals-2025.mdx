@@ -1,0 +1,71 @@
+---
+title: 'Core Web Vitals in 2025: LCP, INP, and CLS'
+description: 'A current reference for the three Core Web Vitals: how they are measured, what moves them, and the field-vs-lab gap that catches teams out.'
+publishedAt: 2025-01-15
+updatedAt: 2025-01-20
+author:
+  name: Editorial Team
+  url: https://example.com
+cluster: core-web-vitals
+tags: [performance, lcp, inp, cls, web-vitals]
+citations: [web-vitals-2024, css-containment]
+draft: false
+---
+
+import Citation from '../../components/Citation.astro';
+
+Core Web Vitals remain the most concrete performance contract between a site and its users. Three metrics define the user-perceived experience: **Largest Contentful Paint (LCP)** for loading, **Interaction to Next Paint (INP)** for responsiveness, and **Cumulative Layout Shift (CLS)** for visual stability <Citation id="web-vitals-2024" />.
+
+## What each metric measures
+
+LCP captures the render time of the largest visible image or text block. Targets: 2.5s good, 4.0s poor. The metric is well-defined but easy to game in lab tests; the field number is what counts.
+
+INP replaces FID and measures the latency of the slowest user interaction during the page lifetime. Targets: 200ms good, 500ms poor. Because INP samples every interaction, a single janky modal can drop a page out of the "good" bucket even when initial load is fast.
+
+CLS accumulates layout shift score across the page lifetime. Targets: 0.1 good, 0.25 poor. CSS containment is the most under-used tool here <Citation id="css-containment" />.
+
+## The field vs lab gap
+
+Lighthouse runs lab tests on emulated hardware over a synthetic network. The Chrome User Experience Report (CrUX) collects field data from real users on real devices, weighted by traffic. These do not match. A page can pass Lighthouse and fail CrUX, or the reverse.
+
+The reliable workflow:
+
+1. Use **lab tools** (Lighthouse, WebPageTest) to diagnose specific pages and to gate CI.
+2. Use **field tools** (CrUX, RUM) to track what users actually experience.
+3. When the two disagree, trust field data.
+
+## Common LCP killers
+
+The dominant LCP causes I see in audits, in order:
+
+- Render-blocking resources, especially synchronous CSS in the head and font CSS without `font-display: swap`.
+- Large hero images served without `width`/`height` and without an explicit `fetchpriority="high"`.
+- A waterfall of preconnects and DNS lookups before the LCP element starts loading.
+- Server response time (TTFB) above 600ms on the document request.
+
+A useful diagnostic: open Chrome DevTools, record a Performance trace, and look for the LCP marker. The chunk between request start and that marker is your LCP budget.
+
+## INP discipline
+
+INP is mostly about the main thread. The cheap wins:
+
+- Break up long tasks. Anything over 50ms blocks input.
+- Defer non-critical hydration. Astro's island model is well-suited here.
+- Use `requestIdleCallback` for analytics and other non-user-facing work.
+- Avoid synchronous layout thrash inside event handlers.
+
+## CLS and containment
+
+CLS regressions usually come from images without dimensions, ads injected mid-stream, and web fonts swapping after first paint. CSS containment lets you tell the browser that a subtree is independent, so layout work in one component cannot ripple into others <Citation id="css-containment" />.
+
+```css
+.card {
+  contain: layout style;
+}
+```
+
+This single line on a card grid often shaves 10-30ms off layout cost on long pages.
+
+## Closing
+
+Core Web Vitals are not a finish line. They are a continuous contract. Set a budget, gate it in CI, watch the field number, and refuse regressions in code review.

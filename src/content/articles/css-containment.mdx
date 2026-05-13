@@ -1,0 +1,66 @@
+---
+title: 'CSS Containment: A Cheap Performance Win'
+description: 'How `contain` and `content-visibility` let the browser skip layout, paint, and style work for offscreen content. The simplest LCP and CLS lever you are not using.'
+publishedAt: 2024-12-30
+author:
+  name: Editorial Team
+cluster: css
+tags: [css, containment, performance, rendering]
+citations: [css-containment]
+draft: false
+---
+
+import Citation from '../../components/Citation.astro';
+
+CSS containment is one of the most under-used performance tools in the platform. Two properties, `contain` and `content-visibility`, let you tell the browser that a subtree is independent of the rest of the page <Citation id="css-containment" />. The browser uses that promise to skip work.
+
+## What `contain` does
+
+`contain` accepts four values that can be combined: `layout`, `paint`, `style`, and `size`.
+
+- `layout`: layout inside this element does not affect anything outside it.
+- `paint`: nothing inside this element paints outside its box.
+- `style`: counter and quote scopes are isolated to this subtree.
+- `size`: the element's size is independent of its descendants (rare, careful).
+
+The most useful combination for cards, list items, and article components is `contain: layout style;`. This is the one-line change that frequently shaves measurable layout cost on long pages.
+
+```css
+.article-card {
+  contain: layout style;
+}
+```
+
+## `content-visibility: auto`
+
+`content-visibility: auto` is the more aggressive sibling. It tells the browser to skip rendering offscreen subtrees entirely until they are about to enter the viewport.
+
+```css
+.long-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+}
+```
+
+`contain-intrinsic-size` is critical here: without it, the browser allocates zero height for skipped content, which destroys scroll anchoring. The value is your best estimate of the rendered height.
+
+The wins are real: pages with hundreds of below-the-fold cards regularly drop initial render time by 30-60 percent.
+
+## When containment is wrong
+
+Containment is a contract, and breaking it produces visual bugs:
+
+- Don't apply `contain: paint` to elements with overflowing children you actually want to see.
+- Don't apply `contain: size` unless you have set a known size, or the element will render at zero.
+- Don't apply `content-visibility: auto` to short, near-the-fold elements; the cost of the subsequent layout pass exceeds the saving.
+
+## A practical rollout
+
+1. Identify long, repetitive lists: article grids, comment threads, large tables.
+2. Add `contain: layout style;` to the repeated item.
+3. Add `content-visibility: auto; contain-intrinsic-size: 0 ESTIMATED_HEIGHT;` to the section wrapping those items.
+4. Measure. The numbers are usually visible in field data within a few days.
+
+## Closing
+
+CSS containment is one of those rare wins that costs nothing in build complexity, code volume, or developer time. It costs a few CSS declarations and a few minutes of measurement.

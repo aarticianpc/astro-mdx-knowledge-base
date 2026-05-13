@@ -1,0 +1,30 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  article: CollectionEntry<'articles'>;
+}
+const { article } = Astro.props;
+const { title, description, publishedAt, cluster } = article.data;
+const formatted = publishedAt.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+<a
+  href={`/articles/${article.slug}`}
+  class="block group rounded-lg border border-ink-200 p-5 hover:border-accent-500 hover:shadow-sm transition-all">
+  <div class="flex items-center gap-2 text-xs text-ink-400 mb-2">
+    <span class="px-2 py-0.5 bg-ink-100 rounded font-medium uppercase tracking-wide">
+      {cluster}
+    </span>
+    <time datetime={publishedAt.toISOString()}>{formatted}</time>
+  </div>
+  <h3 class="text-lg font-semibold text-ink-900 group-hover:text-accent-600 transition-colors">
+    {title}
+  </h3>
+  <p class="mt-2 text-sm text-ink-600 leading-relaxed line-clamp-3">
+    {description}
+  </p>
+</a>

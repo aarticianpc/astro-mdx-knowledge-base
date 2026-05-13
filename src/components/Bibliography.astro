@@ -1,0 +1,30 @@
+---
+import { resolveCitation, formatBibliography } from '../lib/citations';
+
+interface Props {
+  /** Citation ids actually used in the article body. */
+  ids: readonly string[];
+}
+const { ids } = Astro.props;
+const unique = Array.from(new Set(ids));
+const entries = unique.map((id) => resolveCitation(id));
+---
+{entries.length > 0 && (
+  <section
+    aria-labelledby="bibliography-heading"
+    class="mt-16 pt-8 border-t border-ink-200">
+    <h2
+      id="bibliography-heading"
+      class="text-xl font-semibold text-ink-900 mb-4">
+      References
+    </h2>
+    <ol class="space-y-3 text-sm text-ink-600">
+      {entries.map((entry) => (
+        <li id={`cite-${entry.id}`} class="leading-relaxed">
+          <span class="font-mono text-xs text-ink-400 mr-2">[{entry.id}]</span>
+          <span>{formatBibliography(entry)}</span>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}

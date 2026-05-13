@@ -1,0 +1,17 @@
+---
+import { resolveCitation } from '../lib/citations';
+
+interface Props {
+  /** Citation id from src/data/citations.json */
+  id: string;
+}
+const { id } = Astro.props;
+const entry = resolveCitation(id);
+const tooltip = `${entry.authors.join(', ')} (${entry.year}). ${entry.title}. ${entry.publisher}.`;
+---
+<a
+  href={`#cite-${entry.id}`}
+  class="citation-ref"
+  title={tooltip}
+  aria-label={`Citation: ${tooltip}`}
+  data-citation-id={entry.id}>{entry.id}</a>

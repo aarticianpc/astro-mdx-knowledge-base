@@ -1,0 +1,79 @@
+---
+title: 'HTTP Caching Headers: A Practical Reference'
+description: 'Cache-Control, ETag, Last-Modified, immutable, stale-while-revalidate. A pragmatic guide to caching that survives contact with reality.'
+publishedAt: 2025-01-08
+author:
+  name: Editorial Team
+cluster: caching
+tags: [http, caching, cdn, performance]
+citations: [rfc-7234]
+draft: false
+---
+
+import Citation from '../../components/Citation.astro';
+
+HTTP caching is one of the highest-leverage tools in performance work and one of the most consistently misconfigured. The spec is clear, the headers are well-defined, and yet most production sites have at least one expensive mistake in their cache configuration <Citation id="rfc-7234" />.
+
+## The two families
+
+Caching headers split into two families:
+
+1. **Freshness:** how long the cache may serve the response without checking back. Driven by `Cache-Control: max-age` or `Expires`.
+2. **Validation:** what to send when the cache does check back. Driven by `ETag` or `Last-Modified`.
+
+A well-configured response uses both: a long freshness window for fast cache hits, and a validator for cheap revalidation when freshness expires.
+
+## The four configurations that cover 95% of cases
+
+**Static, content-hashed assets** (e.g., `/_astro/main.abc123.js`):
+
+```
+Cache-Control: public, max-age=31536000, immutable
+```
+
+Hashed filenames mean the URL changes when the content changes. `immutable` tells the browser not to revalidate even on reload.
+
+**HTML documents:**
+
+```
+Cache-Control: public, max-age=0, must-revalidate
+ETag: "abc123"
+```
+
+Always revalidate, but use the ETag so the revalidation is a 304 with no body.
+
+**API responses (read-heavy, infrequent change):**
+
+```
+Cache-Control: public, max-age=60, stale-while-revalidate=600
+ETag: "abc123"
+```
+
+Serve cached for 60 seconds, then serve stale for up to 10 minutes while a background fetch refreshes.
+
+**Authenticated or user-specific responses:**
+
+```
+Cache-Control: private, no-cache
+```
+
+`private` keeps the response out of shared caches; `no-cache` requires revalidation.
+
+## Common mistakes
+
+- Using `no-cache` when you mean `no-store`. `no-cache` permits caching with revalidation; `no-store` forbids storage entirely.
+- Setting `max-age` on HTML without a validator. The cache will serve stale HTML and you lose the ability to ship fixes.
+- Mixing `public` with private user data. Always default to `private` unless you are certain the body has no PII.
+- Forgetting `Vary: Accept-Encoding` on responses that are content-negotiated.
+
+## stale-while-revalidate is underrated
+
+`stale-while-revalidate` is the cleanest pattern for slowly-changing public APIs. The user gets a sub-millisecond cache hit, the data is at most one stale generation old, and the origin sees one request per `max-age` window per cache node.
+
+## CDN-specific extensions
+
+Most CDNs add their own directives. Cloudflare's `s-maxage` overrides `max-age` for their cache nodes specifically; `stale-if-error` lets a CDN serve stale on origin failure. Read your CDN's docs and codify the chosen pattern in a single helper rather than scattering header config across handlers.
+
+## Closing
+
+Caching is a contract: between origin, CDN, browser, and intermediate proxies. Get the contract right once, write it down, and stop relitigating it in every PR.

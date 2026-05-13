@@ -1,0 +1,72 @@
+---
+title: 'JavaScript Bundle Discipline: Less, Later, Lazier'
+description: 'How to keep the JS bundle small without sacrificing developer experience. Code splitting, tree-shaking, and the cost of every dependency.'
+publishedAt: 2025-01-05
+author:
+  name: Editorial Team
+cluster: javascript
+tags: [javascript, bundling, performance, treeshaking]
+citations: [v8-performance]
+draft: false
+---
+
+import Citation from '../../components/Citation.astro';
+
+Every kilobyte of JavaScript is paid for three times: parse, compile, and execute. The bundle size headline is the smallest of those costs <Citation id="v8-performance" />. The discipline is to ship less, ship it later, and let the browser do less work to use it.
+
+## Three levers, in order of payoff
+
+1. **Don't ship it.** The cheapest byte is the one that never enters the bundle.
+2. **Ship it later.** Dynamic imports, route-level splitting, and island architectures.
+3. **Ship it smaller.** Tree-shaking, modern syntax, smaller dependencies.
+
+Most teams jump to lever three. Lever one is where the real wins live.
+
+## Auditing the bundle
+
+Run a bundle visualizer on every release. For Vite/esbuild-based projects, `vite-plugin-visualizer` or `esbuild-visualizer` produce treemaps that make accidental bloat obvious.
+
+What to look for:
+
+- A single dependency taking more than 15 percent of the bundle. Almost always replaceable.
+- Multiple versions of the same package. Usually a peer-dependency mismatch.
+- Polyfills for browsers you no longer support. Check your `browserslist`.
+- Duplicate utility code. Lodash imported as a whole module rather than per-function.
+
+## Replace heavy dependencies
+
+A non-exhaustive list of common offenders and their lighter alternatives:
+
+| Heavy | Lighter | When |
+|---|---|---|
+| moment | date-fns or Temporal API | Always |
+| lodash | per-function imports or native | Most cases |
+| axios | native fetch | Most cases |
+| classnames | clsx | Cosmetic, but free |
+| jQuery | native DOM | Always |
+
+The marginal benefit on any single swap is small. The cumulative effect is significant.
+
+## Code splitting that pays
+
+Route-level splitting is the lowest-effort, highest-payoff form of splitting. Every framework supports it natively. Component-level splitting is harder to get right; the round-trip of an extra request often eats the savings on small components.
+
+The rule of thumb: split when the chunk is at least 20 KB gzipped and is not on the critical path.
+
+## Tree-shaking, properly
+
+Tree-shaking only works when:
+
+- The package ships as ES modules (`"type": "module"` and `"exports"` in `package.json`).
+- The package is marked `"sideEffects": false` (or the side-effect-free files are listed).
+- Your bundler is configured for production mode.
+
+Check whether a package is tree-shakable before you adopt it. Inspect its `package.json`. If it ships only CJS, you will pay for every export whether you use it or not.
+
+## Hydration is a JavaScript problem
+
+A 200 KB framework runtime that hydrates the entire page on load is a performance bug regardless of how clever the framework is. The Astro island model and similar partial-hydration patterns are the right structural answer for content sites; for app surfaces, defer hydration of below-the-fold islands.
+
+## Closing
+
+Bundle discipline is a habit, not a project. Set a budget in CI, refuse PRs that breach it, and audit the treemap once a quarter. The bundle stays small; the team stays fast.

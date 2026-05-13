@@ -1,0 +1,68 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogType?: 'website' | 'article';
+}
+
+const { title, description, canonical, ogType = 'website' } = Astro.props;
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const canonicalUrl = canonical ?? `${siteUrl}${Astro.url.pathname.replace(/\/$/, '')}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
+
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <header class="border-b border-ink-200">
+      <div class="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 font-semibold text-ink-900 hover:text-accent-600 transition-colors">
+          <span class="inline-block w-6 h-6 rounded bg-accent-500"></span>
+          <span>Web Performance KB</span>
+        </a>
+        <nav class="flex items-center gap-5 text-sm">
+          <a href="/" class="text-ink-600 hover:text-ink-900">Home</a>
+          <a href="/articles" class="text-ink-600 hover:text-ink-900">Articles</a>
+          <a href="/about" class="text-ink-600 hover:text-ink-900">About</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <footer class="border-t border-ink-200 mt-20">
+      <div class="max-w-3xl mx-auto px-4 py-8 text-sm text-ink-400 flex flex-wrap gap-3 justify-between">
+        <span>&copy; {new Date().getFullYear()} Web Performance Knowledge Base</span>
+        <span>
+          <a href="/rss.xml" class="hover:text-accent-600">RSS</a>
+          <span class="mx-2">&middot;</span>
+          <a href="/sitemap-index.xml" class="hover:text-accent-600">Sitemap</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>
