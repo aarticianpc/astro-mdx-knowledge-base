@@ -23,3 +23,5 @@ pnpm-debug.log*
 
 # lighthouse
 .lighthouseci/
+
+!package-lock.json
